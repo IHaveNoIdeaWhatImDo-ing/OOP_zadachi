@@ -4,7 +4,7 @@ using namespace std;
 
 int main()
 {
-    int N = 5, amount = 0;
+    int N, amount = 0;
     do {
         cout << "Enter the amount of whole numbers: ";
         cin >> N;
