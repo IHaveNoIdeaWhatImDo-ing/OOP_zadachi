@@ -2,6 +2,16 @@
 
 using namespace std;
 
+int smaller (int a, int b)
+{
+    return (a > b ? b : a);
+}
+
+int smallerConst (const int a, const int b)
+{
+    return (a > b ? b : a);
+}
+
 int smallerByPointer (int* a, int* b)
 {
     return (*a > *b ? *b : *a);
