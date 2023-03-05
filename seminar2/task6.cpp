@@ -126,7 +126,7 @@ int main()
 
 			cout << "Registration succesful\n";
 		}
-		else if (strComp(rgstr, buffer, length(login)))
+		else if (strComp(login, buffer, length(login)))
 		{
 			char email[MAX_SIZE],
 				 pass[MAX_SIZE];
@@ -138,11 +138,9 @@ int main()
 
 			bool flag = false;
 			for (int j = 0; j < sus.entries && !flag; ++j)
-			{
 				if (strComp(sus.users[i].email,    email, length(email)) &&
-					strComp(sus.users[i].password, pass,  length(pass) ) )
+					strComp(sus.users[i].password, pass,  length(pass))  )
 					flag = true;
-			}
 
 			if (flag)
 				cout << "Login successful\n";
