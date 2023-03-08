@@ -1,23 +1,89 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 using namespace std;
 
 const int MAX_SIZE = 256;
-char ifpath[MAX_SIZE] = "C:\\Users\\boris\\OneDrive\\Desktop\\inFile.txt";
-char ofpath[MAX_SIZE] = "C:\\Users\\boris\\OneDrive\\Desktop\\outFile.txt";
+char ofpath[MAX_SIZE] = "C:\\Users\\grade\\Desktop\\report.txt";
+char ifpath[MAX_SIZE] = "C:\\Users\\grade\\Desktop\\data.txt";
+char patterns[MAX_SIZE][MAX_SIZE];
+char elements[MAX_SIZE][MAX_SIZE];
+
+int length(char str[MAX_SIZE])
+{
+	int i = 0;
+	while (str[i++] != '\0');
+	return i - 1;
+}
+
+int length(string str)
+{
+	int i = 0;
+	while (str[i++] != '\0');
+	return i - 1;
+}
+
+void strCopy(string& str, char chr[MAX_SIZE], int len)
+{
+	for (int i = 0; i < len; ++i)
+	{
+		chr[i] = str[i];
+	}
+}
+
+bool strComp(char* line, char pattern[MAX_SIZE])
+{
+	int i = 0;
+	while (pattern[i] != '\0')
+		if (line[i] != pattern[i++])
+			return false;
+
+	return true;
+}
+
+void readData()
+{
+	ifstream streamReader(ifpath);
+	int i = 0;
+
+	if (streamReader.is_open())
+	{
+		while (streamReader.good() && !streamReader.eof())
+		{
+			char str[MAX_SIZE];
+			streamReader.getline(str, MAX_SIZE);
+			string temp;
+			stringstream strStream(str);
+
+			getline(strStream, temp, ';');
+			strCopy(temp, patterns[i], length(temp));
+
+			getline(strStream, temp, ';');
+			strCopy(temp, elements[i++], length(temp));
+		}
+	}
+
+	streamReader.close();
+}
 
 void createReport(void)
 {
 	ifstream streamReader(ifpath);
 	ofstream streamWriter(ofpath);
 
-	char temp, elements[4][MAX_SIZE];
+	if (streamReader.is_open())
+	{
+		while (streamReader.good() && !streamReader.eof())
+		{
+			int i = 0;
+			char str[MAX_SIZE],
+				 temp[MAX_SIZE];
+			streamReader.getline(str, MAX_SIZE);
 
-	for (short i = 0, index = 0; i < 4; ++i)
-		streamReader.getline(elements[i], 256);
-
-	streamWriter << "Dear, " << elements[0] << " " << elements[1] << ".\n" << '\n' << elements[2] << '\n' << '\n' << "Sincirely,\n" << elements[3];
+			// To be comtinued
+		}
+	}
 
 	streamReader.close();
 	streamWriter.close();
@@ -25,6 +91,7 @@ void createReport(void)
 
 int main()
 {
+	readData();
 	createReport();
 
 	return 0;
