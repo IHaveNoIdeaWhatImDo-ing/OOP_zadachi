@@ -4,18 +4,17 @@
 
 using namespace std;
 
-const int MAX_SIZE = 256;
-char ofpath[MAX_SIZE] = "C:\\Users\\grade\\Desktop\\report.txt";
-char ifpath[MAX_SIZE] = "C:\\Users\\grade\\Desktop\\data.txt";
+const int MAX_SIZE = 128;
+
+// The path to the file with the values to replace
+char ifpath[MAX_SIZE]      = "C:\\Users\\boris\\OneDrive\\Desktop\\data.txt";
+// The path to the blank of the report
+char ofpath[MAX_SIZE]      = "C:\\Users\\boris\\OneDrive\\Desktop\\report.txt";
+// The path to the report
+char patternpath[MAX_SIZE] = "C:\\Users\\boris\\OneDrive\\Desktop\\pattern.txt";
+
 char patterns[MAX_SIZE][MAX_SIZE];
 char elements[MAX_SIZE][MAX_SIZE];
-
-int length(char str[MAX_SIZE])
-{
-	int i = 0;
-	while (str[i++] != '\0');
-	return i - 1;
-}
 
 int length(string str)
 {
@@ -32,7 +31,7 @@ void strCopy(string& str, char chr[MAX_SIZE], int len)
 	}
 }
 
-bool strComp(char* line, char pattern[MAX_SIZE])
+bool strComp(string line, char pattern[MAX_SIZE])
 {
 	int i = 0;
 	while (pattern[i] != '\0')
@@ -53,14 +52,18 @@ void readData()
 		{
 			char str[MAX_SIZE];
 			streamReader.getline(str, MAX_SIZE);
-			string temp;
+			string temp, concat;
 			stringstream strStream(str);
 
-			getline(strStream, temp, ';');
+			getline(strStream, temp, ' ');
 			strCopy(temp, patterns[i], length(temp));
 
-			getline(strStream, temp, ';');
-			strCopy(temp, elements[i++], length(temp));
+			while (getline(strStream, temp, ' '))
+			{
+				concat += temp + ' ';
+			}
+			strCopy(concat, elements[i++], length(concat));
+			elements[i - 1][length(elements[i - 1]) - 1] = '\0';
 		}
 	}
 
@@ -69,19 +72,41 @@ void readData()
 
 void createReport(void)
 {
-	ifstream streamReader(ifpath);
-	ofstream streamWriter(ofpath);
+	ifstream streamReader(patternpath);
+	ofstream streamWriter(ofpath, ofstream::app);
 
 	if (streamReader.is_open())
 	{
 		while (streamReader.good() && !streamReader.eof())
 		{
-			int i = 0;
-			char str[MAX_SIZE],
-				 temp[MAX_SIZE];
+			char str[MAX_SIZE];
 			streamReader.getline(str, MAX_SIZE);
+			string temp;
+			stringstream strStream(str);
 
-			// To be comtinued
+			while (getline(strStream, temp, '{'))
+			{
+				string temp2;
+				stringstream strStream2(temp);
+
+				while (getline(strStream2, temp2, '}'))
+				{
+					bool isPattern = false;
+					for (int i = 0; i < 4; ++i)
+					{
+						if (strComp(temp2, patterns[i]))
+						{
+							streamWriter << elements[i];
+							isPattern = true;
+							break;
+						}
+					}
+
+					if (!isPattern) streamWriter << temp2;
+				}
+			}
+
+			streamWriter << '\n';
 		}
 	}
 
