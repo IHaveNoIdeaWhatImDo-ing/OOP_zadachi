@@ -1,0 +1,78 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+using namespace std;
+
+char ifpath[] = "C:\\Users\\grade\\Desktop\\inFile.csv";
+char ofpath[] = "C:\\Users\\grade\\Desktop\\outFile.csv";
+
+const int MAX_SIZE = 256;
+
+enum Hair
+{
+    Brown, Black, Blond, Red, White
+};
+
+struct Student
+{
+    char name[2][17];
+    unsigned short fn;
+    float avgGrade;
+    Hair hair;
+};
+
+Student muchenitsi[1024];
+
+void writeStudent(Student& student, int index)
+{
+    if (index < 1024)
+        muchenitsi[index] = student;
+}
+
+void writeToFile()
+{
+    ofstream streamWriter(ofpath);
+
+    for (int i = 0; i < 1024 && streamWriter.is_open() && muchenitsi[i].fn != 0; ++i)
+    {
+        streamWriter << muchenitsi[i].name[0]  << ','
+                     << muchenitsi[i].name[1]  << ','
+                     << muchenitsi[i].fn       << ','
+                     << muchenitsi[i].avgGrade << ','
+                     << muchenitsi[i].hair     << '\n';
+    }
+
+    streamWriter.close();
+}
+
+void readFromFile()
+{
+    ifstream streamReader(ifpath);
+
+    int index = 0;
+    while (streamReader.is_open() && !streamReader.eof())
+    {
+        cout << index << '\n';
+        int temp;
+        streamReader.getline(muchenitsi[index].name[0], 16, ',');
+        streamReader.getline(muchenitsi[index].name[1], 16, ',');
+        streamReader >> muchenitsi[index].fn
+                     >> muchenitsi[index].avgGrade    >> temp;
+                        muchenitsi[index++].hair = (Hair)temp;
+    }
+
+    streamReader.close();
+}
+
+int main()
+{
+    readFromFile();
+    cout << muchenitsi[0].name[0]  << ','
+         << muchenitsi[0].name[1]  << ','
+         << muchenitsi[0].fn       << ','
+         << muchenitsi[0].avgGrade << ','
+         << muchenitsi[0].hair     << '\n';
+
+    return 0;
+}
