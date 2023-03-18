@@ -4,8 +4,8 @@
 
 using namespace std;
 
-char ifpath[] = "C:\\Users\\grade\\Desktop\\inFile.csv";
-char ofpath[] = "C:\\Users\\grade\\Desktop\\outFile.csv";
+char ifpath[] = "C:\\Users\\boris\\OneDrive\\Desktop\\inFile.csv";
+char ofpath[] = "C:\\Users\\boris\\OneDrive\\Desktop\\outFile.csv";
 
 const int MAX_SIZE = 256;
 
@@ -40,7 +40,7 @@ void writeToFile()
                      << muchenitsi[i].name[1]  << ','
                      << muchenitsi[i].fn       << ','
                      << muchenitsi[i].avgGrade << ','
-                     << muchenitsi[i].hair     << '\n';
+                     << muchenitsi[i].hair;
     }
 
     streamWriter.close();
@@ -53,13 +53,16 @@ void readFromFile()
     int index = 0;
     while (streamReader.is_open() && !streamReader.eof())
     {
-        cout << index << '\n';
         int temp;
+        char tempChar;
         streamReader.getline(muchenitsi[index].name[0], 16, ',');
         streamReader.getline(muchenitsi[index].name[1], 16, ',');
-        streamReader >> muchenitsi[index].fn
-                     >> muchenitsi[index].avgGrade    >> temp;
-                        muchenitsi[index++].hair = (Hair)temp;
+        streamReader >> muchenitsi[index].fn;
+        tempChar = streamReader.get();
+        streamReader >> muchenitsi[index].avgGrade;
+        tempChar = streamReader.get();
+        streamReader >> temp;
+        muchenitsi[index++].hair = (Hair)temp;
     }
 
     streamReader.close();
@@ -68,11 +71,19 @@ void readFromFile()
 int main()
 {
     readFromFile();
-    cout << muchenitsi[0].name[0]  << ','
-         << muchenitsi[0].name[1]  << ','
-         << muchenitsi[0].fn       << ','
-         << muchenitsi[0].avgGrade << ','
-         << muchenitsi[0].hair     << '\n';
+
+    int i = 0;
+    while (muchenitsi[i].fn != 0)
+    {
+        cout << muchenitsi[i].name[0]  << ','
+             << muchenitsi[i].name[1]  << ','
+             << muchenitsi[i].fn       << ','
+             << muchenitsi[i].avgGrade << ','
+             << muchenitsi[i].hair;
+        i++;
+    }
+
+    writeToFile();
 
     return 0;
 }
