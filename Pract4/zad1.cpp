@@ -27,7 +27,7 @@ public:
         return age;
     }
 
-    unsigned getexperience() const
+    unsigned getExperience() const
     {
         return experience;
     }
