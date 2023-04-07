@@ -71,7 +71,7 @@ void sortSquares(void)
 void writeToFile(const double area)
 {
     char ofpath[] = "C:\\Users\\grade\\Desktop\\squares-output.txt";
-    ofstream streamWriter(ofpath, ios::app);
+    ofstream streamWriter(ofpath, ios::trunc);
 
     if (streamWriter.is_open()) {
         for (size_t i = 0; i < MAX_SQUARES; ++i) {
