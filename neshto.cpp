@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #pragma warning(disable:4996)
 
 using namespace std;
@@ -67,10 +68,17 @@ public:
         return *this;
     }
 
-    ~Item () {
+    ~Item() {
         delete[] name;
     }
 };
+
+template <class T>
+void mySwap(T& el1, T& el2) {
+    T temp = el1;
+    el1 = el2;
+    el2 = temp;
+}
 
 class ShoppingCart
 {
@@ -133,19 +141,37 @@ public:
         return -1;
     }
 
-    void resize(const bool increase) {
+    void resizeUp(void) {
         try {
-            if (increase) {
-                size_t itemAmount = sizeof(*getItems()) / sizeof(Item);
-                Item* newItems = new Item[itemAmount + 1];
+            size_t itemAmount = sizeof(*getItems()) / sizeof(Item);
+            Item* newItems = new Item[itemAmount + 1];
 
-                for (size_t i = 0; i < itemAmount; ++i) {
-                    newItems[i] = this->items[i];
-                }
-                free();
-
-                this->items = newItems;
+            for (size_t i = 0; i < itemAmount; ++i) {
+                newItems[i] = this->items[i];
             }
+            free();
+
+            this->items = newItems;
+        }
+        catch (bad_alloc ba) {
+            throw ba;
+        }
+    }
+
+    void resizeDown(const char* name) {
+        try {
+            size_t itemAmount = sizeof(*getItems()) / sizeof(Item);
+            Item* newItems = new Item[itemAmount - 1];
+
+            for (size_t i = 0, counter = 0; i < itemAmount; ++i) {
+                newItems[counter] = this->items[i];
+                if (strcmp(newItems[counter].getName(), name)) {
+                    ++counter;
+                }
+            }
+            free();
+
+            this->items = newItems;
         }
         catch (bad_alloc ba) {
             throw ba;
@@ -155,7 +181,7 @@ public:
     void addItem(const Item item) {
         if (find(item.getName()) > -1) {
             size_t itemAmount = sizeof(*getItems()) / sizeof(Item);
-            resize();
+            resizeUp();
 
             this->items[itemAmount] = item;
         }
@@ -163,8 +189,70 @@ public:
 
     bool removeItem(const char* name) {
         if (find(name) > -1) {
-
+            resizeDown(name);
+            return true;
         }
+        return false;
+    }
+
+    size_t itemsCount(void) {
+        return (sizeof(*getItems()) / sizeof(Item));
+    }
+
+    bool exists(const char* name) {
+        return find(name) > 0;
+    }
+
+    bool isEmpty(bool) {
+        return !itemsCount();
+    }
+
+    float getPriceOf(const char* name) {
+        size_t itemsAmount = itemsCount();
+
+        for (size_t i = 0; i < itemsAmount; ++i) {
+            if (!strcmp(this->items[i].getName(), name)) {
+                return this->items[i].getPrice();
+            }
+        }
+
+        return 0;
+    }
+
+    float totalPrice(void) {
+        float total = 0;
+        size_t itemsAmount = itemsCount();
+
+        for (size_t i = 0; i < itemsAmount; ++i) {
+            total += this->items[i].getPrice();
+        }
+
+        return total;
+    }
+
+    void sortByName(void) {
+        size_t itemsAmount = itemsCount();
+
+        for (size_t i = 0; i < itemsAmount - 1; ++i) {
+            for (size_t a = i + 1; i < itemsAmount; ++a) {
+                if (strcmp(this->items[i].getName(), this->items[a].getName()) > 1) {
+                    mySwap(this->items[i], this->items[a]);
+                }
+            }
+        }
+    }
+
+    bool save(const char* fpath) {
+        ofstream streamWriter(fpath, ios::trunc);
+        size_t itemsAmount = itemsCount();
+
+        if (streamWriter.is_open()) {
+            for (size_t i = 0; i < itemsAmount; ++i) {
+                streamWriter << (this->items[i].getName()) << ' ' << (this->items[i].getAvailability()) << ' ' << (this->items[i].getPrice()) << '\n';
+            }
+        }
+
+        streamWriter.close();
     }
 };
 
