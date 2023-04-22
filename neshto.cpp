@@ -247,8 +247,9 @@ public:
         size_t itemsAmount = itemsCount();
 
         if (streamWriter.is_open()) {
+            streamWriter << "Name,Availability,Price\n";
             for (size_t i = 0; i < itemsAmount; ++i) {
-                streamWriter << (this->items[i].getName()) << ' ' << (this->items[i].getAvailability()) << ' ' << (this->items[i].getPrice()) << '\n';
+                streamWriter << (this->items[i].getName()) << ',' << (this->items[i].getAvailability()) << ',' << (this->items[i].getPrice()) << '\n';
             }
         }
 
