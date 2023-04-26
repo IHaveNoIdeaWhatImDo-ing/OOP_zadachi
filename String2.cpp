@@ -24,7 +24,7 @@ public:
         }
     }
 
-    const char* getStr(void) const {
+    char* getStr(void) const {
         return str;
     }
 
@@ -80,6 +80,30 @@ public:
 
     String& operator+=(const String& str) {
         return *this += str.getStr();
+    }
+
+    friend ostream& operator<<(ostream& os, const String& str) {
+        if (str.str) {
+            os << str.getStr();
+        }
+        else {
+            os << "NULL";
+        }
+        return os;
+    }
+
+    friend istream& operator>>(istream& is, String& str) {
+        char* temp = new char[128];
+        is.getline(temp, strlen(temp));
+        str.setStr(temp);
+        delete[] temp;
+
+        return is;
+    }
+
+    String(String&& str) noexcept {
+        this->str = str.getStr();
+        str.str = nullptr;
     }
 
     bool comp(size_t pos, const char* str) {
@@ -161,12 +185,18 @@ public:
 
 int main()
 {
-    String a("a");
-    String b = a + " " + a;
-    String c = b;
-    c +=  " a";
+    //String a("a");
+    //String b = a + " " + a;
+    //String c = b;
+    //c += " a";
 
     //cout << a.find("ba") << ' ' << a.rfind("ba") << '\n';
-    cout << a.getStr() << '\n' << b.getStr() << '\n' << c.getStr() << '\n';
+    //cout << a.getStr() << '\n' << b.getStr() << '\n' << c.getStr() << '\n';
     //cout << a.substr(4, 7).getStr() << '\n';
+
+    String a("neshto tam");
+    String b(move(a));
+
+    cout << "b = " << b << '\n'
+         << "a = " << a;
 }
