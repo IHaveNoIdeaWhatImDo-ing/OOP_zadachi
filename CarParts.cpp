@@ -89,37 +89,37 @@ public:
 
     void setWidth(const float width) {
         if (width < 155 || width > 365) {
-            throw "Invalid width.";
+            throw logic_error("Invalid width.");
         }
         this->width = width;
     }
 
     void setProfile(const float profile) {
         if (profile < 30 || profile > 80) {
-            throw "Invalid profile.";
+            throw logic_error("Invalid profile.");
         }
         this->profile = profile;
     }
 
     void setDiameter(const float diameter) {
         if (diameter < 13 || diameter > 21) {
-            throw "Invalid diameter.";
+            throw logic_error("Invalid diameter.");
         }
         this->diameter = diameter;
     }
 
-    Tire(const unsigned ID, const char* name, const char* description,  const float width, const float profile, const float diameter)
+    Tire(const unsigned ID, const char* name, const char* description, const float width, const float profile, const float diameter)
         : CarPart(ID, name, description), width(0), profile(0), diameter(0) {
         setWidth(width);
         setProfile(profile);
         setDiameter(diameter);
     }
-    
+
     friend ostream& operator<<(ostream& os, const Tire& tire) {
         cout << '(' << tire.getID() << ") by " << tire.getName() << " - " << tire.getDescription() << " - " << tire.getWidth() << '/' << tire.getProfile() << 'R' << tire.getDiameter();
         return os;
     }
- };
+};
 
 class Engine : public CarPart {
     float horsePower;
@@ -131,7 +131,7 @@ public:
 
     void setHorsePower(const float horsePower) {
         if (horsePower < 0) {
-            throw "Horsepower cannot be negative.";
+            throw logic_error("Horsepower cannot be negative.");
         }
         this->horsePower = horsePower;
     }
@@ -147,7 +147,7 @@ public:
     }
 };
 
-class Accummulator : public CarPart {
+class Accumulator : public CarPart {
     float capacity;
     unsigned batteryID;
 
@@ -162,7 +162,7 @@ public:
 
     void setCapacity(const float capacity) {
         if (capacity < 0) {
-            throw "Capacity cannot be negative.";
+            throw logic_error("Capacity cannot be negative.");
         }
         this->capacity = capacity;
     }
@@ -171,47 +171,83 @@ public:
         this->batteryID = batteryID;
     }
 
-    Accummulator(const unsigned ID, const char* name, const char* description, const float capacity, const unsigned batteryID)
+    Accumulator(const unsigned ID, const char* name, const char* description, const float capacity, const unsigned batteryID)
         : CarPart(ID, name, description), capacity(0) {
         setCapacity(capacity);
         setBatteryID(batteryID);
     }
 
-    friend ostream& operator<<(ostream& os, const Accummulator& accum) {
+    friend ostream& operator<<(ostream& os, const Accumulator& accum) {
         cout << '(' << accum.getID() << ") by " << accum.getName() << " - " << accum.getDescription() << " - " << accum.getCapacity() << " Ah";
         return os;
     }
 };
 
-class FuelTank {
-    float capacity;
-    float fuel;
-
+class insufficient_fuel_error : logic_error {
 public:
-    float getCapacity(void) const {
-        return this->capacity;
+    insufficient_fuel_error(const char* message) : logic_error(message) {
+        throw exception(message);
     }
+};
 
-    float getFuel(void) const {
-        return this->fuel;
-    }
+class FuelTank {
+    double capacity;
+    double fuel;
 
     void setCapacity(const float capacity) {
         if (capacity < 0) {
-            throw "Capacity cannot be negative.";
+            throw logic_error("Capacity cannot be negative.");
         }
         this->capacity = capacity;
     }
 
-    void setFuel(const unsigned batteryID) {
+    void setFuel(const unsigned fuel) {
         if (fuel < 0) {
-            throw "Fuel cannot be negative.";
+            throw logic_error("Fuel cannot be negative.");
         }
         else if (fuel > capacity) {
-            throw "Fuel cannot be more than the capacity, that's dangerous.";
+            throw logic_error("Fuel cannot be more than the capacity, that's dangerous.");
         }
         this->fuel = fuel;
     }
+
+public:
+    double getCapacity(void) const {
+        return this->capacity;
+    }
+
+    double getFuel(void) const {
+        return this->fuel;
+    }
+
+    FuelTank(const double capacity) : capacity(0), fuel(0) {
+        setCapacity(capacity);
+        setFuel(capacity);
+    }
+
+    void use(const double fuelToUse) {
+        if (this->fuel - fuelToUse < 0) {
+            throw insufficient_fuel_error("insufficient_fuel_error");
+        }
+        setFuel(this->fuel - fuelToUse);
+    }
+
+    void fill(const double fuelToFill) {
+        if (this->fuel + fuelToFill > this->capacity) {
+            setFuel(capacity);
+            return;
+        }
+        setFuel(this->fuel + fuelToFill);
+    }
+};
+
+class Car {
+    FuelTank fuelTank;
+    Engine engine;
+    Tire tires[4];
+    Accumulator accumulator;
+    double drivenKilometers;
+    float weigth;
 };
 
 int main()
