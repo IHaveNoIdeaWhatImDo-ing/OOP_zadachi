@@ -28,7 +28,7 @@ public:
     void setStr(char* destStr, const char* name) {
         try {
             char* newName = new char[strlen(name) + 1];
-            strcpy(newName, destStr);
+            strcpy(newName, name);
             if (destStr != name && destStr) {
                 delete[] destStr;
             }
@@ -65,6 +65,11 @@ public:
         setName(carPart.getName());
         setDescription(carPart.getDescription());
         return *this;
+    }
+
+    friend ostream& operator<<(ostream& os, const CarPart& cp) {
+        os << '(' << tire.getID() << ") by " << tire.getName() << " - " << tire.getDescription();
+        return os;
     }
 };
 
@@ -108,21 +113,24 @@ public:
         this->diameter = diameter;
     }
 
+    Tire() : width(0), profile(0), diameter(0) {};
+
     Tire(const unsigned ID, const char* name, const char* description, const float width, const float profile, const float diameter)
-        : CarPart(ID, name, description), width(0), profile(0), diameter(0) {
+        : CarPart(ID, name, description) {
         setWidth(width);
         setProfile(profile);
         setDiameter(diameter);
     }
 
     friend ostream& operator<<(ostream& os, const Tire& tire) {
-        cout << '(' << tire.getID() << ") by " << tire.getName() << " - " << tire.getDescription() << " - " << tire.getWidth() << '/' << tire.getProfile() << 'R' << tire.getDiameter();
+        os << (const CarPart&)tire;
+        os << " - " << tire.getWidth() << '/' << tire.getProfile() << 'R' << tire.getDiameter();
         return os;
     }
 };
 
 class Engine : public CarPart {
-    float horsePower;
+    float horsePower = 0;
 
 public:
     float getHorsePower(void) const {
@@ -136,13 +144,16 @@ public:
         this->horsePower = horsePower;
     }
 
+    Engine() = default;
+
     Engine(const unsigned ID, const char* name, const char* description, const float horsePower)
-        : CarPart(ID, name, description), horsePower(0) {
+        : CarPart(ID, name, description) {
         setHorsePower(horsePower);
     }
 
     friend ostream& operator<<(ostream& os, const Engine& engine) {
-        cout << '(' << engine.getID() << ") by " << engine.getName() << " - " << engine.getDescription() << " - " << engine.getHorsePower() << " hp";
+        os << (const CarPart&)engine;
+        os << " - " << engine.getDescription() << " - " << engine.getHorsePower() << " hp";
         return os;
     }
 };
@@ -156,7 +167,7 @@ public:
         return this->capacity;
     }
 
-    float getBatteryID(void) const {
+    unsigned getBatteryID(void) const {
         return this->batteryID;
     }
 
@@ -171,8 +182,10 @@ public:
         this->batteryID = batteryID;
     }
 
+    Accumulator() : capacity(0), batteryID(0) {};
+
     Accumulator(const unsigned ID, const char* name, const char* description, const float capacity, const unsigned batteryID)
-        : CarPart(ID, name, description), capacity(0) {
+        : CarPart(ID, name, description) {
         setCapacity(capacity);
         setBatteryID(batteryID);
     }
@@ -183,25 +196,23 @@ public:
     }
 };
 
-class insufficient_fuel_error : logic_error {
+class insufficient_fuel_error : public logic_error {
 public:
-    insufficient_fuel_error(const char* message) : logic_error(message) {
-        throw exception(message);
-    }
+    insufficient_fuel_error(const char* message) : logic_error(message) {}
 };
 
 class FuelTank {
     double capacity;
     double fuel;
 
-    void setCapacity(const float capacity) {
+    void setCapacity(const double capacity) {
         if (capacity < 0) {
             throw logic_error("Capacity cannot be negative.");
         }
         this->capacity = capacity;
     }
 
-    void setFuel(const unsigned fuel) {
+    void setFuel(const double fuel) {
         if (fuel < 0) {
             throw logic_error("Fuel cannot be negative.");
         }
@@ -212,6 +223,8 @@ class FuelTank {
     }
 
 public:
+    FuelTank() = default;
+
     double getCapacity(void) const {
         return this->capacity;
     }
@@ -220,7 +233,7 @@ public:
         return this->fuel;
     }
 
-    FuelTank(const double capacity) : capacity(0), fuel(0) {
+    FuelTank(const double capacity) {
         setCapacity(capacity);
         setFuel(capacity);
     }
@@ -248,7 +261,67 @@ class Car {
     Accumulator accumulator;
     double drivenKilometers;
     float weigth;
+
+public:
+    Engine getEngine(void) const {
+        return this->engine;
+    }
+
+    float getWeigth(void) const {
+        return this->weigth;
+    }
+
+    void setWeigth(const float weigth) {
+        this->weigth = weigth;
+    }
+
+    Car() = default;
+
+    Car(const FuelTank ft, const Engine eng, const Tire trs[4], const Accumulator acc, const double dk, const float w) {
+        if (sizeof(trs) < 4) {
+            throw logic_error("Too few tires.");
+        }
+
+        this->fuelTank = ft.getCapacity();
+        this->engine = eng;
+        for (size_t i = 0; i < 4; ++i) {
+            this->tires[i] = trs[i];
+        }
+        this->accumulator = acc;
+        this->drivenKilometers = dk;
+        this->weigth = w;
+    }
+
+    bool drive(const double kilometers) {
+        if (kilometers > this->fuelTank.getFuel()) {
+            return false;
+        }
+
+        this->drivenKilometers += kilometers;
+        this->fuelTank.use(kilometers);
+        return true;
+    }
 };
+
+Car* dragRace(Car* car1, Car* car2) {
+    if (!(*car1).drive(0.4) && !(*car2).drive(0.4)) {
+        return nullptr;
+    }
+    else if ((*car1).drive(0.4) && !(*car2).drive(0.4)) {
+        return car1;
+    }
+    else if (!(*car1).drive(0.4) && (*car2).drive(0.4)) {
+        return car2;
+    }
+    else {
+        if ((*car1).getWeigth() / (*car1).getEngine().getHorsePower() > (*car2).getWeigth() / (*car2).getEngine().getHorsePower()) {
+            return car1;
+        }
+        else {
+            return car2;
+        }
+    }
+}
 
 int main()
 {
