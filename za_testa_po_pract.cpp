@@ -89,13 +89,13 @@ public:
         }
     }
 
-    void setCars(Car* cars) {
-        if (!dupeCars(cars, sizeof(cars))) {
+    void setCars(Car* cars, const size_t size) {
+        if (!dupeCars(cars, size)) {
             try {
                 if (this->cars != cars) {
                     delete[] this->cars;
                     this->cars = cars;
-                    this->size = sizeof(cars);
+                    this->size = size;
                 }
             }
             catch (bad_alloc ba) {
@@ -107,15 +107,29 @@ public:
     Parking() = default;
 
     Parking(const Parking& parking) {
-        setCars(parking.getCars());
+        setCars(parking.getCars(), parking.length());
         this->size = parking.length();
+    }
+
+    Parking(Car* cars, const size_t size) {
+        setCars(cars, size);
+        this->size = size;
     }
 
     ~Parking() {
         delete[] cars;
     }
 
-    Parking operator+(const Car& car) {
+    Parking& operator=(const Parking& parking) {
+        if (this->cars && this->cars != parking.getCars()) {
+            delete[] this->cars;
+        }
+
+        this->cars = parking.getCars();
+        this->size = parking.length();
+    }
+
+    Parking operator+(const Car car) {
         for (size_t i = 0; i < this->size; ++i) {
             if (this->cars[i] == car) {
                 throw logic_error("Car already exists.");
@@ -123,27 +137,61 @@ public:
         }
 
         try {
-            Car* newCars = new Car[size + 1];
-            for (size_t i = 0; i < size; ++i) {
+            Car* newCars = new Car[this->size + 1];
+            for (size_t i = 0; i < this->size; ++i) {
                 newCars[i] = this->cars[i];
             }
-            newCars[size] = car;
-            delete[] this->cars;
-            this->cars = newCars;
-            this->size++;
+            newCars[this->size] = car;
 
-            return *this;
+            return Parking(newCars, this->size + 1);
         }
         catch (bad_alloc ba) {
             throw ba;
         }
     }
 
-    Parking operator+=(const Car& car) {
-        return *this + car;
+    Parking& operator+=(const Car car) {
+        *this = *this + car;
+        return  *this;
     }
 
+    Parking operator-(const Car car) {
+        for (size_t i = 0; i < this->size; ++i) {
+            if (this->cars[i] == car) {
+                throw logic_error("Car is not present in the parcking.");
+            }
+        }
 
+        try {
+            Car* newCars = new Car[this->size - 1];
+            for (size_t i = 0, index = 0; i < this->size; ++i) {
+                newCars[index] = (this->cars[i]);
+                if (this->cars[i] != car) {
+                    index++;
+                }
+            }
+
+            return Parking(newCars, this->size - 1);
+        }
+        catch (bad_alloc ba) {
+            throw ba;
+        }
+    }
+
+    Parking& operator-=(const Car car) {
+        *this = *this - car;
+        return  *this;
+    }
+
+    Car& operator[](const char reg[9]) {
+        for (size_t i = 0; i < this->size; ++i) {
+            if (!strcmp(this->cars[i].getRegistry(), reg)) {
+                return this->cars[i];
+            }
+        }
+
+        throw logic_error("Registry number doesn't exist.");
+    }
 };
 
 int main()
