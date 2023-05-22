@@ -82,11 +82,13 @@ public:
     bool dupeCars(const Car* cars, size_t size) {
         for (size_t i = 0; i < size - 1; ++i) {
             for (size_t j = i + 1; j < size; ++j) {
-                if (breakConst(cars[i]) != cars[j]) {
-                    return false;
+                if (breakConst(cars[i]) == cars[j]) {
+                    return true;
                 }
             }
         }
+        
+        return false;
     }
 
     void setCars(Car* cars, const size_t size) {
